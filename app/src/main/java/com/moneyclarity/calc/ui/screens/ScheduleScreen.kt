@@ -462,7 +462,6 @@ private fun BreakdownHeading(title: String, subtitle: String) {
     }
 }
 
-@Composable
 private val DateColumn = 86.dp
 private val MoneyColumn = 112.dp
 
