@@ -41,6 +41,7 @@ fun CalculatorDetailScreen(id: String) {
 
     var output by remember(id) { mutableStateOf<CalcOutput?>(null) }
     var saved by remember(id) { mutableStateOf(false) }
+    ReportCalculationResult(output != null)
     val snapshotValues = remember(id) { mutableStateMapOf<String, String>() }
 
     fun calculate() {

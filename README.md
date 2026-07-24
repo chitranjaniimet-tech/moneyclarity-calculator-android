@@ -5,7 +5,7 @@
 An offline Android financial calculator for working out what borrowed money
 actually costs—and for checking common saving, tax and planning calculations.
 
-Package: `com.moneyclarity.calc` · Version 1.2.0 · Kotlin · Jetpack Compose · Material 3
+Package: `com.moneyclarity.calc` · Version 1.2.1 · Kotlin · Jetpack Compose · Material 3
 · Android 8–16+ (API 26–36)
 
 ---
@@ -25,6 +25,15 @@ Package: `com.moneyclarity.calc` · Version 1.2.0 · Kotlin · Jetpack Compose �
 The app declares **no permissions at all**, including no internet permission. Nothing can leave the phone.
 
 It is a calculator. It performs arithmetic on figures the user types in. It does not offer credit, name lenders, or recommend a course of action.
+
+## Version 1.2.1 presentation
+
+- Removed the permanent bottom bar and replaced it with a compact elevated
+  publisher chip floating over the content.
+- The chip automatically leaves the screen while typing and whenever a
+  calculated result or repayment schedule is visible.
+- Added a native Android launch splash, refreshed app icon and short animated
+  MoneyClarity brand reveal.
 
 ## Version 1.2.0 refinement
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="paper">#F7F4EE</color>
-    <color name="teal">#0E5C55</color>
-    <color name="ic_launcher_background">#0E5C55</color>
+    <color name="paper">#F4F7FC</color>
+    <color name="teal">#2563EB</color>
+    <color name="splash_background">#0B1020</color>
+    <color name="ic_launcher_background">#2563EB</color>
 </resources>

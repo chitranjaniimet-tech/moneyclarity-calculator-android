@@ -38,41 +38,36 @@ private fun wordmark() =
     else R.drawable.mct_wordmark_on_light
 
 @Composable
-fun BrandFooterBar(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun FloatingBrandPill(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val tap = haptics()
-    Box(
-        modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        contentAlignment = Alignment.Center
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f),
+        tonalElevation = 8.dp,
+        shadowElevation = 10.dp,
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.7f)
+        ),
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { tap.select(); onClick() }
     ) {
-        Surface(
-            shape = RoundedCornerShape(14.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            border = androidx.compose.foundation.BorderStroke(
-                1.dp,
-                MaterialTheme.colorScheme.outline.copy(alpha = 0.75f)
-            ),
-            modifier = Modifier
-                .clip(RoundedCornerShape(14.dp))
-                .clickable { tap.select(); onClick() }
+        Row(
+            Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                Modifier.padding(horizontal = 11.dp, vertical = 7.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(wordmark()),
-                    contentDescription = "moneyclaritytech.com",
-                    modifier = Modifier.height(17.dp)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    "Free tools ↗",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Image(
+                painter = painterResource(wordmark()),
+                contentDescription = "moneyclaritytech.com",
+                modifier = Modifier.height(17.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "Free tools ↗",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

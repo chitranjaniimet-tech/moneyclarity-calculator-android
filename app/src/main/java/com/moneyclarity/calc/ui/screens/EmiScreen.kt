@@ -66,6 +66,7 @@ fun EmiScreen(state: CalcState, onOpenSchedule: () -> Unit) {
     val target = targets[targetIndex]
 
     var snapshot by remember { mutableStateOf<EmiSnapshot?>(null) }
+    ReportCalculationResult(snapshot != null)
 
     fun calculate() {
         val principalIn = state.amountValue

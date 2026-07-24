@@ -49,6 +49,7 @@ private fun QuotedLoanPane(state: CalcState, context: android.content.Context) {
 
     var snapshot by remember { mutableStateOf<Pair<CostInput, CostResult>?>(null) }
     var saved by remember { mutableStateOf(false) }
+    ReportCalculationResult(snapshot != null)
 
     fun calculate() {
         val input = CostInput(
@@ -179,6 +180,7 @@ private fun NoCostPane(context: android.content.Context) {
 
     var snapshot by remember { mutableStateOf<Pair<NoCostInput, NoCostResult>?>(null) }
     var saved by remember { mutableStateOf(false) }
+    ReportCalculationResult(snapshot != null)
 
     fun calculate() {
         val input = NoCostInput(
