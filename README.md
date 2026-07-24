@@ -73,7 +73,8 @@ Make a new empty repository on GitHub, then upload the contents of this zip. Kee
 
 ### 2. First build
 
-Push to `main`. The **Build** workflow runs automatically, produces a debug APK, and attaches it under the run's **Artifacts** section. Download and install it to test on your phone.
+Every pull request and push to `main` runs the **Build** workflow. It produces a
+debug APK under the run's **Artifacts** section for installation and testing.
 
 There is no Gradle wrapper committed to this repository. The workflow generates it on the runner, which keeps the repo free of binary files so it stays editable from a phone.
 
