@@ -2,9 +2,11 @@ package com.moneyclarity.calc.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -47,6 +49,7 @@ fun ScheduleScreen(state: CalcState) {
     val context = LocalContext.current
     val keyboard = LocalSoftwareKeyboardController.current
     var view by rememberSaveable { mutableIntStateOf(0) }
+    val tableScroll = rememberScrollState()
 
     val today = remember { Calendar.getInstance() }
     var day by rememberSaveable { mutableStateOf(today.get(Calendar.DAY_OF_MONTH).toString()) }
@@ -102,10 +105,11 @@ fun ScheduleScreen(state: CalcState) {
                 firstEmiDate
             )
         } else if (fixedPayment != null) {
-            Finance.scheduleAtPayment(
+            Finance.scheduleAtPaymentForMonths(
                 state.amountValue,
                 state.rateValue,
-                fixedPayment
+                fixedPayment,
+                state.months
             )
         } else {
             Finance.schedule(state.amountValue, state.rateValue, state.months)
@@ -267,26 +271,33 @@ fun ScheduleScreen(state: CalcState) {
             item {
                 BreakdownHeading(
                     title = "${rows.size} instalments",
-                    subtitle = "Interest is shown separately so the principal reduction is easy to verify."
+                    subtitle = "Compact table in rupees. Swipe sideways to see every column."
                 )
             }
-            items(rows, key = { it.month }) { row ->
+            item {
+                MonthlyTableHeader(tableScroll)
+            }
+            itemsIndexed(rows, key = { _, row -> row.month }) { index, row ->
                 val (month, year) = dateFor(row.month)
-                MonthlyScheduleRow(
+                MonthlyTableRow(
                     date = shortMonth(month, year),
                     row = row,
-                    isYearEnd = row.month % 12 == 0 || row.month == rows.size
+                    alternate = index % 2 == 1,
+                    scrollState = tableScroll
                 )
             }
         } else {
             item {
                 BreakdownHeading(
                     title = "${years.size} financial years",
-                    subtitle = "Grouped April to March for easier tax and statement checking."
+                    subtitle = "April to March totals. Swipe sideways to see every column."
                 )
             }
-            items(years, key = { it.label }) { year ->
-                FinancialYearRow(year)
+            item {
+                FinancialYearTableHeader(tableScroll)
+            }
+            itemsIndexed(years, key = { _, year -> year.label }) { index, year ->
+                FinancialYearTableRow(year, index % 2 == 1, tableScroll)
             }
         }
     }
@@ -452,109 +463,148 @@ private fun BreakdownHeading(title: String, subtitle: String) {
 }
 
 @Composable
-private fun MonthlyScheduleRow(date: String, row: ScheduleRow, isYearEnd: Boolean) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = if (isYearEnd) MaterialTheme.colorScheme.primaryContainer
-        else MaterialTheme.colorScheme.surface,
-        border = BorderStroke(
-            1.dp,
-            if (isYearEnd) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
-            else MaterialTheme.colorScheme.outline
-        ),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(Modifier.padding(14.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.width(72.dp)) {
-                    Text(
-                        "#${row.month}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(date, style = com.moneyclarity.calc.ui.theme.NumberMedium)
-                }
-                Column(Modifier.weight(1f)) {
-                    MetricLabel("Payment")
-                    MetricValue(rupees(row.payment))
-                }
-                Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                    MetricLabel("Balance")
-                    MetricValue(rupees(row.closing), TextAlign.End)
-                }
-            }
-            Spacer(Modifier.height(10.dp))
-            HairlineDivider()
-            Spacer(Modifier.height(9.dp))
-            Row {
-                Column(Modifier.weight(1f)) {
-                    MetricLabel("Interest")
-                    MetricValue(rupees(row.interest), color = MaterialTheme.colorScheme.secondary)
-                }
-                Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                    MetricLabel("Principal repaid")
-                    MetricValue(rupees(row.principal), TextAlign.End)
-                }
-            }
+private val DateColumn = 86.dp
+private val MoneyColumn = 112.dp
+
+@Composable
+private fun MonthlyTableHeader(scrollState: androidx.compose.foundation.ScrollState) {
+    ScheduleTableFrame(top = true) {
+        Row(
+            Modifier
+                .horizontalScroll(scrollState)
+                .background(MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            HeaderCell("No. / date", DateColumn, TextAlign.Start)
+            HeaderCell("Payment", MoneyColumn)
+            HeaderCell("Principal", MoneyColumn)
+            HeaderCell("Interest", MoneyColumn)
+            HeaderCell("Balance", MoneyColumn)
         }
     }
 }
 
 @Composable
-private fun FinancialYearRow(year: FinancialYear) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(Modifier.padding(14.dp)) {
-            Text(
-                year.label,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(Modifier.height(10.dp))
-            Row {
-                Column(Modifier.weight(1f)) {
-                    MetricLabel("Paid")
-                    MetricValue(rupees(year.paid))
-                    Spacer(Modifier.height(9.dp))
-                    MetricLabel("Interest")
-                    MetricValue(rupees(year.interest), color = MaterialTheme.colorScheme.secondary)
-                }
-                Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                    MetricLabel("Principal")
-                    MetricValue(rupees(year.principal), TextAlign.End)
-                    Spacer(Modifier.height(9.dp))
-                    MetricLabel("Closing balance")
-                    MetricValue(rupees(year.closing), TextAlign.End)
-                }
-            }
+private fun MonthlyTableRow(
+    date: String,
+    row: ScheduleRow,
+    alternate: Boolean,
+    scrollState: androidx.compose.foundation.ScrollState
+) {
+    ScheduleTableFrame {
+        Row(
+            Modifier
+                .horizontalScroll(scrollState)
+                .background(
+                    if (alternate) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+                    else MaterialTheme.colorScheme.surface
+                ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TableCell("#${row.month}\n$date", DateColumn, TextAlign.Start, primary = true)
+            TableCell(rupees(row.payment), MoneyColumn)
+            TableCell(rupees(row.principal), MoneyColumn)
+            TableCell(rupees(row.interest), MoneyColumn, accent = true)
+            TableCell(rupees(row.closing), MoneyColumn)
         }
     }
 }
 
 @Composable
-private fun MetricLabel(text: String) {
+private fun FinancialYearTableHeader(scrollState: androidx.compose.foundation.ScrollState) {
+    ScheduleTableFrame(top = true) {
+        Row(
+            Modifier
+                .horizontalScroll(scrollState)
+                .background(MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            HeaderCell("Financial year", MoneyColumn, TextAlign.Start)
+            HeaderCell("Paid", MoneyColumn)
+            HeaderCell("Principal", MoneyColumn)
+            HeaderCell("Interest", MoneyColumn)
+            HeaderCell("Balance", MoneyColumn)
+        }
+    }
+}
+
+@Composable
+private fun FinancialYearTableRow(
+    year: FinancialYear,
+    alternate: Boolean,
+    scrollState: androidx.compose.foundation.ScrollState
+) {
+    ScheduleTableFrame {
+        Row(
+            Modifier
+                .horizontalScroll(scrollState)
+                .background(
+                    if (alternate) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+                    else MaterialTheme.colorScheme.surface
+                )
+        ) {
+            TableCell(year.label, MoneyColumn, TextAlign.Start, primary = true)
+            TableCell(rupees(year.paid), MoneyColumn)
+            TableCell(rupees(year.principal), MoneyColumn)
+            TableCell(rupees(year.interest), MoneyColumn, accent = true)
+            TableCell(rupees(year.closing), MoneyColumn)
+        }
+    }
+}
+
+@Composable
+private fun ScheduleTableFrame(
+    top: Boolean = false,
+    content: @Composable () -> Unit
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        if (top) {
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+        }
+        content()
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.82f))
+    }
+}
+
+@Composable
+private fun HeaderCell(
+    text: String,
+    width: androidx.compose.ui.unit.Dp,
+    align: TextAlign = TextAlign.End
+) {
     Text(
-        text,
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
+        text.uppercase(),
+        modifier = Modifier.width(width).padding(horizontal = 10.dp, vertical = 11.dp),
+        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+        color = MaterialTheme.colorScheme.onPrimaryContainer,
+        textAlign = align,
+        maxLines = 1
     )
 }
 
 @Composable
-private fun MetricValue(
+private fun TableCell(
     text: String,
-    textAlign: TextAlign = TextAlign.Start,
-    color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface
+    width: androidx.compose.ui.unit.Dp,
+    align: TextAlign = TextAlign.End,
+    primary: Boolean = false,
+    accent: Boolean = false
 ) {
     Text(
         text,
-        style = com.moneyclarity.calc.ui.theme.NumberMedium.copy(fontWeight = FontWeight.SemiBold),
-        color = color,
-        textAlign = textAlign
+        modifier = Modifier.width(width).padding(horizontal = 10.dp, vertical = 11.dp),
+        style = MaterialTheme.typography.bodyMedium.copy(
+            fontWeight = if (primary) FontWeight.SemiBold else FontWeight.Medium
+        ),
+        color = when {
+            accent -> MaterialTheme.colorScheme.secondary
+            primary -> MaterialTheme.colorScheme.primary
+            else -> MaterialTheme.colorScheme.onSurface
+        },
+        textAlign = align,
+        maxLines = 2
     )
 }
 

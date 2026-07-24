@@ -20,7 +20,12 @@ data class SavedCalc(
     val rateType: String = "REDUCING",
     val processingFee: Double = 0.0,
     val insurance: Double = 0.0,
-    val note: String = ""
+    val note: String = "",
+    /** LOAN entries can be reopened in the instalment calculator. */
+    val kind: String = "LOAN",
+    /** Snapshot fields let every calculator keep its result, not only loans. */
+    val result: String = "",
+    val details: String = ""
 )
 
 /**
@@ -55,6 +60,25 @@ object Store {
         save(context, updated)
         return updated
     }
+
+    fun addResult(
+        context: Context,
+        title: String,
+        result: String,
+        details: String
+    ): List<SavedCalc> = add(
+        context,
+        SavedCalc(
+            id = System.currentTimeMillis(),
+            name = title,
+            amount = 0.0,
+            rate = 0.0,
+            months = 0,
+            kind = "RESULT",
+            result = result,
+            details = details
+        )
+    )
 
     fun remove(context: Context, id: Long): List<SavedCalc> {
         val updated = load(context).filterNot { it.id == id }

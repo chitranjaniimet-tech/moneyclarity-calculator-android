@@ -2,6 +2,8 @@ package com.moneyclarity.calc.engine
 
 import kotlin.math.ln
 import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.math.abs
 
 /**
  * Four figures describe a reducing-balance loan: amount, rate, tenure and
@@ -61,6 +63,23 @@ object LoanSolve {
             return Solved.Impossible(
                 "That works out to over 50 years. Raise the instalment to bring it into range."
             )
+        }
+
+        /*
+         * The UI accepts and displays whole rupees. A perfectly ordinary EMI
+         * can therefore be a few paise away from the exact formula. Feeding
+         * that displayed amount back into the logarithm must not turn 240
+         * months into 241 merely because the unrounded answer is 240.0018.
+         *
+         * Snap only when the entered whole-rupee payment is within half a
+         * rupee of the EMI for the nearest whole month. This follows the same
+         * rounding contract as the screen without masking a genuinely
+         * fractional final instalment.
+         */
+        val nearestMonth = n.roundToInt().coerceAtLeast(1)
+        val nearestPayment = Finance.emi(principal, annualRatePct, nearestMonth)
+        if (abs(nearestPayment - instalment) <= 0.5) {
+            return Solved.Ok(nearestMonth.toDouble())
         }
         return Solved.Ok(n)
     }

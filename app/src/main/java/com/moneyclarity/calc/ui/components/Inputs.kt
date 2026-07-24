@@ -9,7 +9,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,11 +29,10 @@ import com.moneyclarity.calc.engine.trim
  * way to know the finger was on its way past. Rather than patch the gesture
  * handling, the sliders were removed from the scrolling path altogether.
  *
- * What replaces them is a typed field with a decrement and increment either
- * side, plus an optional fine tune sheet. The sheet is where a slider still
- * makes sense, because a modal surface has nothing scrolling behind it to
- * confuse the gesture with.
+ * What replaces them is a typed field with precise decrement and increment
+ * controls. There are no hidden sliders anywhere in the app.
  */
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun ValueField(
     label: String,
@@ -49,7 +47,6 @@ fun ValueField(
     fineTune: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    var sheetOpen by remember { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
     val current = value.toDoubleOrNull() ?: 0.0
 
@@ -59,25 +56,12 @@ fun ValueField(
     }
 
     Column(modifier.fillMaxWidth()) {
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                label,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            if (fineTune) {
-                TextButton(onClick = { sheetOpen = true }, contentPadding = PaddingValues(horizontal = 8.dp)) {
-                    Icon(Icons.Filled.Tune, contentDescription = null, modifier = Modifier.size(15.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text("Fine tune", style = MaterialTheme.typography.labelMedium)
-                }
-            }
-        }
-        Spacer(Modifier.height(4.dp))
+        Text(
+            label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(7.dp))
         OutlinedTextField(
             value = value,
             onValueChange = { new ->
@@ -113,7 +97,7 @@ fun ValueField(
                 imeAction = ImeAction.Done
             ),
             keyboardActions = KeyboardActions(onDone = { keyboard?.hide() }),
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth()
         )
         if (prefix == "₹") {
@@ -129,19 +113,6 @@ fun ValueField(
         }
     }
 
-    if (sheetOpen) {
-        FineTuneSheet(
-            label = label,
-            value = current,
-            min = min,
-            max = if (max > 50_000_000.0) 10_000_000.0 else max,
-            prefix = prefix,
-            suffix = suffix,
-            decimals = decimals,
-            onDismiss = { sheetOpen = false },
-            onApply = { emit(it); sheetOpen = false }
-        )
-    }
 }
 
 @Composable
@@ -154,72 +125,17 @@ private fun StepButton(
     // stepped, so anything heavier would become noise.
     val tap = haptics()
     Surface(
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(11.dp),
         color = MaterialTheme.colorScheme.primaryContainer,
-        modifier = Modifier.size(34.dp)
+        modifier = Modifier.size(38.dp)
     ) {
-        IconButton(onClick = { tap.tick(); onClick() }, modifier = Modifier.size(34.dp)) {
+        IconButton(onClick = { tap.tick(); onClick() }, modifier = Modifier.size(38.dp)) {
             Icon(
                 icon,
                 contentDescription = description,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(18.dp)
             )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun FineTuneSheet(
-    label: String,
-    value: Double,
-    min: Double,
-    max: Double,
-    prefix: String,
-    suffix: String?,
-    decimals: Int,
-    onDismiss: () -> Unit,
-    onApply: (Double) -> Unit
-) {
-    var draft by remember { mutableStateOf(value.toFloat()) }
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(Modifier.padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
-            Eyebrow(label)
-            Spacer(Modifier.height(10.dp))
-            Text(
-                prefix + (if (decimals == 0) draft.toLong().toString() else trim(draft.toDouble(), decimals)) +
-                    (suffix ?: ""),
-                style = com.moneyclarity.calc.ui.theme.NumberHero,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(Modifier.height(16.dp))
-            // Safe here: a modal sheet has nothing scrolling behind it.
-            Slider(
-                value = draft.coerceIn(min.toFloat(), max.toFloat()),
-                onValueChange = { draft = it },
-                valueRange = min.toFloat()..max.toFloat()
-            )
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(
-                    prefix + min.toLong(),
-                    style = com.moneyclarity.calc.ui.theme.NumberSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    prefix + max.toLong(),
-                    style = com.moneyclarity.calc.ui.theme.NumberSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Spacer(Modifier.height(20.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text("Cancel") }
-                Button(
-                    onClick = { onApply(draft.toDouble()) },
-                    modifier = Modifier.weight(1f)
-                ) { Text("Apply") }
-            }
         }
     }
 }
@@ -311,7 +227,7 @@ fun TenureField(months: Int, onChange: (Int) -> Unit) {
                 imeAction = ImeAction.Done
             ),
             keyboardActions = KeyboardActions(onDone = { keyboard?.hide() }),
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth()
         )
     }

@@ -3,7 +3,6 @@ package com.moneyclarity.calc.ui.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import com.moneyclarity.calc.R
 
@@ -34,30 +34,46 @@ import com.moneyclarity.calc.R
  */
 @Composable
 private fun wordmark() =
-    if (isSystemInDarkTheme()) R.drawable.mct_wordmark_on_dark
+    if (MaterialTheme.colorScheme.background.luminance() < 0.5f) R.drawable.mct_wordmark_on_dark
     else R.drawable.mct_wordmark_on_light
 
 @Composable
 fun BrandFooterBar(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val tap = haptics()
-    Column(
+    Box(
         modifier
             .fillMaxWidth()
-            .clickable { tap.select(); onClick() }
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(wordmark()),
-            contentDescription = "moneyclaritytech.com",
-            modifier = Modifier.height(26.dp)
-        )
-        Spacer(Modifier.height(3.dp))
-        Text(
-            "More free tools ↗",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Surface(
+            shape = RoundedCornerShape(14.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            border = androidx.compose.foundation.BorderStroke(
+                1.dp,
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.75f)
+            ),
+            modifier = Modifier
+                .clip(RoundedCornerShape(14.dp))
+                .clickable { tap.select(); onClick() }
+        ) {
+            Row(
+                Modifier.padding(horizontal = 11.dp, vertical = 7.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(wordmark()),
+                    contentDescription = "moneyclaritytech.com",
+                    modifier = Modifier.height(17.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Free tools ↗",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }
 

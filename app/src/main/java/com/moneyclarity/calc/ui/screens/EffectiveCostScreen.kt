@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.moneyclarity.calc.data.CalcState
 import com.moneyclarity.calc.data.Export
+import com.moneyclarity.calc.data.Store
 import com.moneyclarity.calc.engine.*
 import com.moneyclarity.calc.ui.components.*
 
@@ -47,6 +48,7 @@ private fun QuotedLoanPane(state: CalcState, context: android.content.Context) {
     var gst by remember { mutableStateOf(true) }
 
     var snapshot by remember { mutableStateOf<Pair<CostInput, CostResult>?>(null) }
+    var saved by remember { mutableStateOf(false) }
 
     fun calculate() {
         val input = CostInput(
@@ -61,6 +63,7 @@ private fun QuotedLoanPane(state: CalcState, context: android.content.Context) {
             advanceEmis = advance.toIntOrNull() ?: 0
         )
         snapshot = input to EffectiveCost.compute(input)
+        saved = false
     }
 
     SectionCard(title = "How it was quoted") {
@@ -133,8 +136,19 @@ private fun QuotedLoanPane(state: CalcState, context: android.content.Context) {
             }
         }
 
-        OutlinedButton(
-            onClick = {
+        ResultActions(
+            saved = saved,
+            onSave = {
+                Store.addResult(
+                    context,
+                    "Effective cost",
+                    result.effectiveRate?.let { "${percent(it)} effective annual cost" }
+                        ?: "Effective rate not computable",
+                    "EMI ${rupees(result.instalment)} · Charges ${rupees(result.totalCharges)} · Total ${rupees(result.totalOutgo)}"
+                )
+                saved = true
+            },
+            onShare = {
                 Export.shareText(
                     context,
                     "Effective cost working",
@@ -151,9 +165,8 @@ private fun QuotedLoanPane(state: CalcState, context: android.content.Context) {
                         append("Total repaid: ${rupees(result.totalOutgo)}")
                     }
                 )
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) { Text("Share this working") }
+            }
+        )
     }
 }
 
@@ -165,6 +178,7 @@ private fun NoCostPane(context: android.content.Context) {
     var fee by remember { mutableStateOf("199") }
 
     var snapshot by remember { mutableStateOf<Pair<NoCostInput, NoCostResult>?>(null) }
+    var saved by remember { mutableStateOf(false) }
 
     fun calculate() {
         val input = NoCostInput(
@@ -174,6 +188,7 @@ private fun NoCostPane(context: android.content.Context) {
             processingFee = fee.toDoubleOrNull() ?: 0.0
         )
         snapshot = input to NoCostEmi.compute(input)
+        saved = false
     }
 
     SectionCard(title = "The offer") {
@@ -226,8 +241,20 @@ private fun NoCostPane(context: android.content.Context) {
             }
         }
 
-        OutlinedButton(
-            onClick = {
+        ResultActions(
+            saved = saved,
+            onSave = {
+                Store.addResult(
+                    context,
+                    "No cost EMI",
+                    "Real cost: ${rupees(result.realCost)}",
+                    "EMI ${rupees(result.instalment)} · Effective rate ${
+                        result.effectiveRate?.let { percent(it) } ?: "not computable"
+                    }"
+                )
+                saved = true
+            },
+            onShare = {
                 Export.shareText(
                     context,
                     "No cost EMI working",
@@ -243,8 +270,7 @@ private fun NoCostPane(context: android.content.Context) {
                         )
                     }
                 )
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) { Text("Share this working") }
+            }
+        )
     }
 }

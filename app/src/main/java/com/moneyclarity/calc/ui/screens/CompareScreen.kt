@@ -9,7 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.moneyclarity.calc.data.Export
+import com.moneyclarity.calc.data.Store
 import com.moneyclarity.calc.engine.*
 import com.moneyclarity.calc.ui.components.*
 
@@ -24,6 +27,8 @@ private class Quote(amount: String, rate: String, months: Int, fee: String, flat
 
 @Composable
 fun CompareScreen() {
+    val context = LocalContext.current
+    var saved by remember { mutableStateOf(false) }
     val quotes = remember {
         mutableStateListOf(
             Quote("500000", "10.5", 60, "5000", false),
@@ -44,6 +49,10 @@ fun CompareScreen() {
     }
 
     val cheapestIndex = results.indices.minByOrNull { results[it].totalOutgo } ?: -1
+    val quoteSignature = quotes.joinToString("|") {
+        "${it.label};${it.amount};${it.rate};${it.months};${it.fee};${it.flat}"
+    }
+    LaunchedEffect(quoteSignature) { saved = false }
 
     Column(
         Modifier
@@ -152,6 +161,47 @@ fun CompareScreen() {
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
+        }
+
+        if (cheapestIndex >= 0) {
+            val winner = quotes[cheapestIndex]
+            val winnerResult = results[cheapestIndex]
+            val winnerName = winner.label.ifBlank { "Quote ${cheapestIndex + 1}" }
+            ResultActions(
+                saved = saved,
+                onSave = {
+                    Store.addResult(
+                        context,
+                        "Quote comparison",
+                        "$winnerName: ${rupees(winnerResult.totalOutgo)} total",
+                        "${quotes.size} quotes compared · EMI ${rupees(winnerResult.instalment)} · Effective cost ${
+                            winnerResult.effectiveRate?.let { percent(it) } ?: "—"
+                        }"
+                    )
+                    saved = true
+                },
+                onShare = {
+                    Export.shareText(
+                        context,
+                        "Quote comparison",
+                        buildString {
+                            appendLine("Quote comparison")
+                            appendLine()
+                            quotes.forEachIndexed { index, quote ->
+                                val result = results[index]
+                                appendLine(quote.label.ifBlank { "Quote ${index + 1}" })
+                                appendLine("EMI: ${rupees(result.instalment)}")
+                                appendLine("Effective annual cost: ${
+                                    result.effectiveRate?.let { percent(it) } ?: "—"
+                                }")
+                                appendLine("Total paid: ${rupees(result.totalOutgo)}")
+                                appendLine()
+                            }
+                            append("$winnerName has the lowest total outgo.")
+                        }
+                    )
+                }
+            )
         }
     }
 }

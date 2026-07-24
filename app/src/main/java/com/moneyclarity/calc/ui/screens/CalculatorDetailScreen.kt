@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.moneyclarity.calc.data.Calculators
 import com.moneyclarity.calc.data.Export
 import com.moneyclarity.calc.data.CalcOutput
+import com.moneyclarity.calc.data.Store
 import com.moneyclarity.calc.ui.components.*
 
 /**
@@ -39,6 +40,7 @@ fun CalculatorDetailScreen(id: String) {
     }
 
     var output by remember(id) { mutableStateOf<CalcOutput?>(null) }
+    var saved by remember(id) { mutableStateOf(false) }
     val snapshotValues = remember(id) { mutableStateMapOf<String, String>() }
 
     fun calculate() {
@@ -46,6 +48,7 @@ fun CalculatorDetailScreen(id: String) {
         output = spec.compute(numeric)
         snapshotValues.clear()
         snapshotValues.putAll(values)
+        saved = false
     }
 
     Column(
@@ -124,25 +127,35 @@ fun CalculatorDetailScreen(id: String) {
                 }
             }
 
-            OutlinedButton(
-                onClick = {
+            val working = buildString {
+                appendLine(spec.title)
+                appendLine()
+                spec.fields.forEach { f ->
+                    appendLine("${f.label}: ${f.prefix}${snapshotValues[f.key]}${f.suffix ?: ""}")
+                }
+                appendLine()
+                appendLine("${result.heroLabel}: ${result.heroValue}")
+                result.lines.forEach { appendLine("${it.label}: ${it.value}") }
+            }
+            ResultActions(
+                saved = saved,
+                onSave = {
+                    Store.addResult(
+                        context,
+                        spec.title,
+                        "${result.heroLabel}: ${result.heroValue}",
+                        result.lines.joinToString(" · ") { "${it.label}: ${it.value}" }
+                    )
+                    saved = true
+                },
+                onShare = {
                     Export.shareText(
                         context,
                         spec.title,
-                        buildString {
-                            appendLine(spec.title)
-                            appendLine()
-                            spec.fields.forEach { f ->
-                                appendLine("${f.label}: ${f.prefix}${snapshotValues[f.key]}${f.suffix ?: ""}")
-                            }
-                            appendLine()
-                            appendLine("${result.heroLabel}: ${result.heroValue}")
-                            result.lines.forEach { appendLine("${it.label}: ${it.value}") }
-                        }
+                        working
                     )
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Share this working") }
+                }
+            )
         }
     }
 }

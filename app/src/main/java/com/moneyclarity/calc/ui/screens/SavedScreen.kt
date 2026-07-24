@@ -45,7 +45,7 @@ fun SavedScreen(state: CalcState, onLoaded: () -> Unit) {
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Work out an instalment and tap Save. Whatever you keep stays on this phone.",
+                    "Work out any result and tap Save. Whatever you keep stays on this phone.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -56,22 +56,43 @@ fun SavedScreen(state: CalcState, onLoaded: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(items, key = { it.id }) { item ->
-                    val emi = Finance.emi(item.amount, item.rate, item.months)
                     SectionCard {
                         Eyebrow(item.name)
                         Spacer(Modifier.height(8.dp))
-                        StatRow("Instalment", rupees(emi), emphasis = true)
-                        HairlineDivider()
-                        StatRow("Rate and tenure", "${percent(item.rate)} for ${monthsToTenure(item.months)}")
+                        if (item.kind == "LOAN") {
+                            val emi = Finance.emi(item.amount, item.rate, item.months)
+                            StatRow("Instalment", rupees(emi), emphasis = true)
+                            HairlineDivider()
+                            StatRow(
+                                "Rate and tenure",
+                                "${percent(item.rate)} for ${monthsToTenure(item.months)}"
+                            )
+                        } else {
+                            Text(
+                                item.result,
+                                style = com.moneyclarity.calc.ui.theme.NumberLarge,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            if (item.details.isNotBlank()) {
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    item.details,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                         Spacer(Modifier.height(10.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Button(
-                                onClick = {
-                                    state.set(item.amount, item.rate, item.months)
-                                    onLoaded()
-                                },
-                                modifier = Modifier.weight(1f)
-                            ) { Text("Open") }
+                            if (item.kind == "LOAN") {
+                                Button(
+                                    onClick = {
+                                        state.set(item.amount, item.rate, item.months)
+                                        onLoaded()
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) { Text("Open") }
+                            }
                             OutlinedButton(
                                 onClick = { items = Store.remove(context, item.id) },
                                 modifier = Modifier.weight(1f)

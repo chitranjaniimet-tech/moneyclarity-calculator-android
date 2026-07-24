@@ -8,6 +8,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
@@ -21,6 +22,7 @@ private val LightScheme = lightColorScheme(
     secondaryContainer = AmberContainer,
     onSecondaryContainer = Ink,
     tertiary = Positive,
+    onTertiary = CardSurface,
     background = Paper,
     onBackground = Ink,
     surface = CardSurface,
@@ -30,7 +32,9 @@ private val LightScheme = lightColorScheme(
     outline = Hairline,
     outlineVariant = Hairline,
     error = Alert,
-    onError = Paper
+    onError = CardSurface,
+    errorContainer = Color(0xFFFFDAD6),
+    onErrorContainer = Color(0xFF410002)
 )
 
 private val DarkScheme = darkColorScheme(
@@ -43,6 +47,7 @@ private val DarkScheme = darkColorScheme(
     secondaryContainer = NightAmberContainer,
     onSecondaryContainer = NightAmber,
     tertiary = NightPositive,
+    onTertiary = NightBase,
     background = NightBase,
     onBackground = NightInk,
     surface = NightCard,
@@ -52,7 +57,9 @@ private val DarkScheme = darkColorScheme(
     outline = NightHairline,
     outlineVariant = NightHairline,
     error = NightAlert,
-    onError = NightBase
+    onError = Color(0xFF690005),
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6)
 )
 
 

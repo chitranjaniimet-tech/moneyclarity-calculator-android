@@ -3,7 +3,7 @@
 An offline Android financial calculator for working out what borrowed money
 actually costs—and for checking common saving, tax and planning calculations.
 
-Package: `com.moneyclarity.calc` · Version 1.1.0 · Kotlin · Jetpack Compose · Material 3
+Package: `com.moneyclarity.calc` · Version 1.2.0 · Kotlin · Jetpack Compose · Material 3
 · Android 8–16+ (API 26–36)
 
 ---
@@ -16,13 +16,31 @@ Package: `com.moneyclarity.calc` · Version 1.1.0 · Kotlin · Jetpack Compose �
 | Instalment | Solve for EMI, tenure, rate or eligible amount from the other three figures. |
 | Prepayment | Simulates a lump sum or a recurring extra, and compares cutting the tenure against cutting the instalment. Reports the instalment number at which the outlay is recovered. |
 | Compare quotes | Up to three quotes ranked on total money paid out rather than on instalment size. |
-| Schedule | Mobile-first repayment cards by month or Indian financial year, actual first-period interest, and a complete dated CSV export. |
-| Saved | Figures kept on the device. |
+| Schedule | Compact repayment tables by month or Indian financial year, actual first-period interest, and a complete dated CSV export. |
+| Saved | Loan plans and result snapshots kept on the device. |
 | Settings | Appearance and app details. |
 
 The app declares **no permissions at all**, including no internet permission. Nothing can leave the phone.
 
 It is a calculator. It performs arithmetic on figures the user types in. It does not offer credit, name lenders, or recommend a course of action.
+
+## Version 1.2.0 refinement
+
+- Replaced the sepia/green monochrome interface with a clean neutral canvas,
+  blue actions, violet findings, category accents and a purpose-built dark
+  palette.
+- Corrected reverse-tenure rounding: a whole-rupee EMI that represents a
+  240-month loan now resolves to 240 months, not 241.
+- Made that rounding rule flow through the repayment schedule so the final
+  balance still reconciles exactly.
+- Replaced repayment pills with compact aligned tables for monthly and
+  financial-year views.
+- Added Save result to every calculator flow; Saved now supports both reopenable
+  loans and general result snapshots.
+- Rebuilt the publisher footer as a compact pill and selected its light/dark
+  wordmark from the app theme, not the phone theme.
+- Removed the remaining hidden sliders. Figures use direct entry and precise
+  step controls throughout.
 
 ## Version 1.1.0 reliability work
 
@@ -79,7 +97,7 @@ Delete the workflow run afterwards so the artifact does not linger.
 
 ### 4. Produce a release build for Play
 
-Create a tag beginning with `v`, for example `v1.1.0`. The Build workflow then produces a signed `.aab` under Artifacts. That is the file Play Console accepts.
+Create a tag beginning with `v`, for example `v1.2.0`. The Build workflow then produces a signed `.aab` under Artifacts. That is the file Play Console accepts.
 
 To raise the version later, edit `versionCode` and `versionName` in `app/build.gradle.kts` and tag again. `versionCode` must increase with every upload.
 
@@ -101,6 +119,9 @@ The calculation engine in `app/src/main/java/com/moneyclarity/calc/engine/` was 
 
 ## Notes on the design
 
-The palette is warm paper with deep teal. Amber is deliberately rationed to a single job: marking the number that carries the finding, on the effective cost screen and on interest figures. Nothing decorative uses it.
+The palette uses a cool neutral canvas with blue for actions, violet for
+findings, emerald for positive movement and distinct category accents. The
+MoneyClarity green is reserved for the publisher wordmark, so the entire
+interface no longer reads as a single monochrome brand block.
 
 No font files are bundled, so the repository stays entirely text and can be edited from a phone. Figures are set with tabular numerals so digits do not shift as values change.

@@ -2,6 +2,7 @@ package com.moneyclarity.calc.engine
 
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import kotlin.math.abs
 import kotlin.math.pow
 
 data class ScheduleRow(
@@ -106,6 +107,51 @@ object Finance {
             rows.add(ScheduleRow(m, balance, paid, interest, principalPart, closing))
             balance = closing
             m++
+        }
+        return rows
+    }
+
+    /**
+     * Fixed-payment schedule for a tenure already resolved by [LoanSolve].
+     *
+     * Whole-rupee UI rounding can make the entered payment differ from the
+     * formula by a few paise. The regular payment is preserved for every row
+     * except the closing row, which absorbs that tiny residual so the table
+     * reconciles exactly to principal and still has the resolved row count.
+     */
+    fun scheduleAtPaymentForMonths(
+        principal: Double,
+        annualRatePct: Double,
+        payment: Double,
+        months: Int
+    ): List<ScheduleRow> {
+        val rows = mutableListOf<ScheduleRow>()
+        if (principal <= 0.0 || payment <= 0.0 || months <= 0) return rows
+
+        // If the only difference is whole-rupee display rounding, use the exact
+        // contractual EMI internally. Every visible rupee remains identical,
+        // while the final row no longer invents a ₹200-style rounding residue.
+        val exactPayment = emi(principal, annualRatePct, months)
+        if (abs(exactPayment - payment) <= 0.5) {
+            return schedule(principal, annualRatePct, months)
+        }
+
+        val r = annualRatePct / 12.0 / 100.0
+        if (r > 0.0 && payment <= principal * r) return rows
+
+        var balance = principal
+        for (m in 1..months) {
+            val interest = balance * r
+            var principalPart = payment - interest
+            var paid = payment
+            if (m == months || principalPart >= balance) {
+                principalPart = balance
+                paid = balance + interest
+            }
+            val closing = (balance - principalPart).coerceAtLeast(0.0)
+            rows.add(ScheduleRow(m, balance, paid, interest, principalPart, closing))
+            balance = closing
+            if (balance <= 0.0) break
         }
         return rows
     }

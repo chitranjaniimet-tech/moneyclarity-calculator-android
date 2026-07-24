@@ -29,6 +29,8 @@ import com.moneyclarity.calc.engine.rupees
 import com.moneyclarity.calc.engine.trim
 import com.moneyclarity.calc.ui.components.*
 import kotlin.math.roundToLong
+import kotlin.math.ceil
+import kotlin.math.abs
 
 /**
  * Amount, rate, tenure and instalment. Fix any three and the fourth follows,
@@ -147,7 +149,12 @@ fun EmiScreen(state: CalcState, onOpenSchedule: () -> Unit) {
             val answer = (snap.solved as Solved.Ok).value
             val rows = remember(snap) {
                 when (snap.target) {
-                    SolveFor.TENURE -> Finance.scheduleAtPayment(snap.principalIn, snap.rateIn, snap.instalmentIn)
+                    SolveFor.TENURE -> Finance.scheduleAtPaymentForMonths(
+                        snap.principalIn,
+                        snap.rateIn,
+                        snap.instalmentIn,
+                        ceil(answer).toInt()
+                    )
                     SolveFor.RATE -> Finance.schedule(snap.principalIn, answer, snap.monthsIn)
                     SolveFor.AMOUNT -> Finance.schedule(answer, snap.rateIn, snap.monthsIn)
                     else -> Finance.schedule(snap.principalIn, snap.rateIn, snap.monthsIn)
@@ -160,7 +167,9 @@ fun EmiScreen(state: CalcState, onOpenSchedule: () -> Unit) {
             val interest = Finance.totalInterest(rows)
             val total = rows.sumOf { it.payment }
             val finalInstalment = rows.lastOrNull()?.payment ?: 0.0
-            val hasStub = snap.target == SolveFor.TENURE && rows.size > 1 && finalInstalment < instalment - 1.0
+            val hasStub = snap.target == SolveFor.TENURE &&
+                rows.size > 1 &&
+                abs(finalInstalment - instalment) >= 1.0
 
             SectionCard {
                 when (snap.target) {
@@ -213,9 +222,9 @@ fun EmiScreen(state: CalcState, onOpenSchedule: () -> Unit) {
 
             if (hasStub) {
                 Text(
-                    "Paying exactly ${rupees(snap.instalmentIn)} does not divide evenly into this " +
-                        "balance, so the last instalment is smaller. The instalment has been kept " +
-                        "as entered rather than adjusted to fit a round tenure.",
+                    "Paying ${rupees(snap.instalmentIn)} does not divide evenly into this balance, " +
+                        "so the closing instalment is ${rupees(finalInstalment)}. The regular " +
+                        "instalment has been kept as entered.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

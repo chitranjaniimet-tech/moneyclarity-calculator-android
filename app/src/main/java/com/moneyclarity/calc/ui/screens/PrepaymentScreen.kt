@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.moneyclarity.calc.data.CalcState
 import com.moneyclarity.calc.data.Export
+import com.moneyclarity.calc.data.Store
 import com.moneyclarity.calc.engine.*
 import com.moneyclarity.calc.ui.components.*
 
@@ -27,6 +28,7 @@ fun PrepaymentScreen(state: CalcState) {
     var chargePct by remember { mutableStateOf("0") }
 
     var snapshot by remember { mutableStateOf<PrepaySnapshot?>(null) }
+    var saved by remember { mutableStateOf(false) }
 
     fun calculate() {
         val input = PrepayInput(
@@ -41,6 +43,7 @@ fun PrepaymentScreen(state: CalcState) {
             prepayChargePct = chargePct.toDoubleOrNull() ?: 0.0
         )
         snapshot = PrepaySnapshot(input, Prepayment.simulate(input), modeIndex)
+        saved = false
     }
 
     Column(
@@ -155,8 +158,21 @@ fun PrepaymentScreen(state: CalcState) {
                 }
             }
 
-            OutlinedButton(
-                onClick = {
+            ResultActions(
+                saved = saved,
+                onSave = {
+                    Store.addResult(
+                        context,
+                        "Prepayment",
+                        "Interest avoided: ${rupees(result.interestSaved)}",
+                        if (snapModeIndex == 0)
+                            "Tenure shorter by ${monthsToTenure(result.monthsSaved)} · Net benefit ${rupees(result.netSaved)}"
+                        else
+                            "New EMI ${rupees(result.newInstalment)} · Net benefit ${rupees(result.netSaved)}"
+                    )
+                    saved = true
+                },
+                onShare = {
                     Export.shareText(
                         context,
                         "Prepayment working",
@@ -172,9 +188,8 @@ fun PrepaymentScreen(state: CalcState) {
                             else append("New instalment: ${rupees(result.newInstalment)}")
                         }
                     )
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Share this working") }
+                }
+            )
         }
     }
 }

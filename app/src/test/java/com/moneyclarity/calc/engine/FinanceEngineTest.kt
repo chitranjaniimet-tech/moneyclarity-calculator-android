@@ -71,6 +71,28 @@ class FinanceEngineTest {
     }
 
     @Test
+    fun roundedDisplayedEmiResolvesBackToOriginalTenure() {
+        val principal = 15_000_000.0
+        val rate = 7.25
+        val displayedPayment = 118_556.0
+
+        val solved = LoanSolve.months(principal, rate, displayedPayment) as Solved.Ok
+        val rows = Finance.scheduleAtPaymentForMonths(
+            principal,
+            rate,
+            displayedPayment,
+            solved.value.toInt()
+        )
+
+        assertEquals(240.0, solved.value, 0.0)
+        assertEquals(240, rows.size)
+        assertEquals(displayedPayment, kotlin.math.round(rows.first().payment), 0.0)
+        assertEquals(displayedPayment, kotlin.math.round(rows.last().payment), 0.0)
+        assertEquals(0.0, rows.last().closing, 0.001)
+        assertEquals(principal, rows.sumOf { it.principal }, 0.01)
+    }
+
+    @Test
     fun brokenPeriodUsesActualDaysAndStillCloses() {
         val disbursement = LocalDate.of(2026, 7, 25)
         val firstEmi = LocalDate.of(2026, 8, 10)

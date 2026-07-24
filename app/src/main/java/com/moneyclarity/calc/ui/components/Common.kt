@@ -44,9 +44,14 @@ fun SectionCard(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(22.dp),
         color = MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+        tonalElevation = 1.dp,
+        shadowElevation = 0.5.dp,
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.78f)
+        )
     ) {
         Column(Modifier.padding(16.dp)) {
             if (title != null) {
@@ -71,20 +76,24 @@ fun ToggleRow(
     Row(
         modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
-            .padding(3.dp)
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.8f),
+                RoundedCornerShape(14.dp)
+            )
+            .padding(4.dp)
     ) {
         options.forEachIndexed { index, option ->
             val selected = index == selectedIndex
             Box(
                 Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(11.dp))
                     .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
                     .clickable { tap.select(); onSelect(index) }
-                    .padding(vertical = 10.dp),
+                    .padding(vertical = 11.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -286,7 +295,7 @@ fun CalculateButton(hasResult: Boolean, onClick: () -> Unit, modifier: Modifier 
             onClick()
         },
         modifier = modifier.fillMaxWidth().height(52.dp),
-        shape = RoundedCornerShape(14.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Icon(
             Icons.Filled.Calculate,
@@ -301,6 +310,40 @@ fun CalculateButton(hasResult: Boolean, onClick: () -> Unit, modifier: Modifier 
     }
 }
 
+/** One consistent Save + Share row for every completed calculation. */
+@Composable
+fun ResultActions(
+    saved: Boolean,
+    onSave: () -> Unit,
+    onShare: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val tap = haptics()
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Button(
+            onClick = {
+                tap.commit()
+                onSave()
+            },
+            enabled = !saved,
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(14.dp)
+        ) {
+            Text(if (saved) "Saved" else "Save result")
+        }
+        OutlinedButton(
+            onClick = {
+                tap.select()
+                onShare()
+            },
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(14.dp)
+        ) {
+            Text("Share")
+        }
+    }
+}
+
 /**
  * Sits where a result would go before the first calculation. Point of this
  * card rather than leaving blank space: an empty gap below the button reads
@@ -309,9 +352,13 @@ fun CalculateButton(hasResult: Boolean, onClick: () -> Unit, modifier: Modifier 
 @Composable
 fun CalculatePrompt(modifier: Modifier = Modifier) {
     Surface(
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(22.dp),
         color = MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        tonalElevation = 1.dp,
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.78f)
+        ),
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
