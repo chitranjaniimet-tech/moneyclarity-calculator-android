@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      statuses: write
     steps:
       - uses: actions/checkout@v4
 
@@ -106,3 +107,30 @@ jobs:
             app/build/outputs/bundle/release/*.aab
             app/build/outputs/apk/release/*.apk
           generate_release_notes: true
+
+      # Exposes this run's URL through the commit status API. That makes the
+      # exact run and its APK artifact discoverable to repository tooling
+      # without scraping the Actions website.
+      - name: Record successful build status
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          curl --fail-with-body -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -d "$(python3 -c 'import json,sys; print(json.dumps({"state":"success","target_url":sys.argv[1],"description":"Tests, lint and APK succeeded","context":"moneyclarity/android-build"}))' "$RUN_URL")"
+
+      - name: Record failed build status
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          curl --fail-with-body -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -d "$(python3 -c 'import json,sys; print(json.dumps({"state":"failure","target_url":sys.argv[1],"description":"Android build failed","context":"moneyclarity/android-build"}))' "$RUN_URL")"
