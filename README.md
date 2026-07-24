@@ -1,5 +1,7 @@
 # MoneyClarity Calc
 
+[![Android build](https://github.com/chitranjaniimet-tech/moneyclarity-calculator-android/actions/workflows/android-build.yml/badge.svg)](https://github.com/chitranjaniimet-tech/moneyclarity-calculator-android/actions/workflows/android-build.yml)
+
 An offline Android financial calculator for working out what borrowed money
 actually costs—and for checking common saving, tax and planning calculations.
 
