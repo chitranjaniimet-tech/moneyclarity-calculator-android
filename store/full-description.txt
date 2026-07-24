@@ -1,0 +1,38 @@
+MoneyClarity Calc answers the question most calculators skip. Not "what is my instalment", but "what is this actually costing me".
+
+THE RATE BEHIND THE QUOTE
+
+A quote of "8% flat" is not 8%. Enter the flat rate, the processing fee, any bundled insurance and any instalments taken in advance, and the app resolves all of it into the annual reducing-balance rate you are really paying. A typical 8% flat vehicle quote comes out a little over 14%.
+
+LOAN TOOLS
+
+- Effective cost: the real annual rate behind a flat quote, with fees and add-ons folded in. Handles no-cost EMI offers too.
+- Instalment: solve for whichever figure you do not know. Fix the amount, rate and tenure to get the instalment. Or fix the instalment to get the tenure, the interest rate, or how much that instalment would actually borrow.
+- Prepayment: cut the tenure or cut the instalment, with the break-even point between them.
+- Compare quotes: ranked on total outgo, not on whose instalment looks smallest.
+- Schedule: a dated month-by-month table, a financial-year view, and CSV export.
+
+28 MORE CALCULATORS
+
+Investing: monthly plan, target-first planning, lump sum, withdrawal plan, CAGR, step-up, financial independence.
+Deposits: FD, RD, PPF, girl child scheme, savings certificate, monthly income schemes.
+Work: provident fund, gratuity, HRA exemption, NPS, retirement corpus, take-home pay.
+Tax: income tax new against old for tax year 2026-27, capital gains.
+Borrowing: borrowing capacity, credit card payoff, renting against buying.
+Everyday: simple and compound interest, GST, inflation.
+
+BUILT FOR INDIAN FIGURES
+
+Amounts group the Indian way, so 5000000 reads as 50,00,000 instead of something you have to count on the screen. Tenures read in years and months. Schedules follow the April to March financial year.
+
+NO PERMISSIONS. NOT ONE.
+
+The app declares no permissions at all, including no internet access, so Android itself stops it from opening a network connection. There is no account, no sign-in, no analytics, no tracking and no advertising. You do not have to take that on trust: open App permissions on this page and it reads "No permissions required".
+
+WHAT THIS APP IS NOT
+
+This is a calculator, not an adviser. It does arithmetic on figures you type in. It does not offer credit, arrange or facilitate a loan, introduce you to any lender, or tell you whether to borrow, invest or save. No lender is named anywhere in it. Results are estimates for your own information, and the figures a provider actually quotes will govern any real agreement.
+
+WORKING PRACTICE
+
+Every formula is executed and cross-checked against published figures before it ships, rather than assumed correct because it looks right.
