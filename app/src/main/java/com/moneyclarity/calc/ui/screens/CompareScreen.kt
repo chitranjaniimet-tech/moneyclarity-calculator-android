@@ -28,6 +28,7 @@ private class Quote(amount: String, rate: String, months: Int, fee: String, flat
 @Composable
 fun CompareScreen() {
     val context = LocalContext.current
+    ReportCalculationResult(true)
     var saved by remember { mutableStateOf(false) }
     val quotes = remember {
         mutableStateListOf(

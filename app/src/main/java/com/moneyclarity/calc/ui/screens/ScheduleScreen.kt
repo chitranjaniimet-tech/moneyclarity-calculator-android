@@ -118,6 +118,7 @@ fun ScheduleScreen(state: CalcState) {
     val years = remember(rows, startMonth, startYear) {
         Finance.byFinancialYear(rows, startMonth + 1, startYear)
     }
+    ReportCalculationResult(rows.isNotEmpty())
 
     fun dateFor(instalment: Int): Pair<Int, Int> {
         val absolute = startMonth + (instalment - 1)

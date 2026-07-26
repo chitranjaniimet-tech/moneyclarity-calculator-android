@@ -1,10 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Keep the launcher and splash as one visual identity. The artwork stays
-         inside Android's adaptive-icon safe zone on circular and squircle masks. -->
     <group
         android:pivotX="54"
         android:pivotY="54"

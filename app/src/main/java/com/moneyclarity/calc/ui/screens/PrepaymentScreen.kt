@@ -29,6 +29,7 @@ fun PrepaymentScreen(state: CalcState) {
 
     var snapshot by remember { mutableStateOf<PrepaySnapshot?>(null) }
     var saved by remember { mutableStateOf(false) }
+    ReportCalculationResult(snapshot != null)
 
     fun calculate() {
         val input = PrepayInput(
